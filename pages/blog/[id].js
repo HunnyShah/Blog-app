@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import Navbar from "@/Components/Navbar";
 import "bootstrap/dist/css/bootstrap.min.css";
+import Navbar from "../../Components/Navbar";
 
 const BlogDetails = () => {
   const [blogDetail, setBlogDetail] = useState([]);
