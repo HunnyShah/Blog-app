@@ -1,3 +1,4 @@
+// Components/BlogList.js
 "use client";
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -9,6 +10,10 @@ function BlogList() {
   const [data, setData] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [sortBy, setSortBy] = useState("date"); // date, title, author
+  const [sortOrder, setSortOrder] = useState("desc"); // asc, desc
   const router = useRouter();
 
   useEffect(() => {
@@ -28,24 +33,59 @@ function BlogList() {
     }
   };
 
-  let filteredData = data;
+  // Get unique categories and tags
+  const categories = [
+    ...new Set(data.flatMap((item) => item.categories || [])),
+  ];
+  const allTags = [...new Set(data.flatMap((item) => item.tags || []))];
+
+  // Filter and sort data
+  let filteredData = [...data];
+
+  // Search filter
   if (searchQuery.trim() !== "") {
-    filteredData = data.filter((item) =>
-      item.title.toLowerCase().includes(searchQuery.toLowerCase())
+    filteredData = filteredData.filter(
+      (item) =>
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }
+
+  // Category filter
+  if (selectedCategory) {
+    filteredData = filteredData.filter((item) =>
+      item.categories?.includes(selectedCategory)
+    );
+  }
+
+  // Tags filter
+  if (selectedTags.length > 0) {
+    filteredData = filteredData.filter((item) =>
+      selectedTags.every((tag) => item.tags?.includes(tag))
+    );
+  }
+
+  // Sort
+  filteredData.sort((a, b) => {
+    let compareA = a[sortBy];
+    let compareB = b[sortBy];
+
+    if (sortBy === "date") {
+      compareA = new Date(compareA);
+      compareB = new Date(compareB);
+    }
+
+    if (sortOrder === "asc") {
+      return compareA > compareB ? 1 : -1;
+    } else {
+      return compareA < compareB ? 1 : -1;
+    }
+  });
 
   return (
     <div>
       <Navbar />
       <div className="container bg-light" style={{ marginTop: "5rem" }}>
-        <input
-          type="text"
-          className="form-control mb-2"
-          placeholder="Search..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
         <div className="row">
           {filteredData.map((item) => (
             <div key={item.id} className="col-md-4">
@@ -68,13 +108,17 @@ function BlogList() {
                     </div>
                   </div>
                   <div className="mt-2">
-                    <Link href={`/blog/${item.id}`}>
-                      <button className="btn btn-primary me-2">
-                        Read more
-                      </button>
+                    <Link
+                      href={`/blog/${item.id}`}
+                      className="btn btn-primary me-2"
+                    >
+                      Read more
                     </Link>
-                    <Link href={`/edit/${item.id}`}>
-                      <button className="btn btn-warning me-2">Edit</button>
+                    <Link
+                      href={`/edit/${item.id}`}
+                      className="btn btn-warning me-2"
+                    >
+                      Edit
                     </Link>
                     <button
                       className="btn btn-danger"

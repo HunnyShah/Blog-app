@@ -1,12 +1,12 @@
+// pages/edit/[id].js
 "use client";
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Navbar from "../../Components/Navbar";
 
 const EditBlog = () => {
   const router = useRouter();
-  const { id } = router.query;
   const [formData, setFormData] = useState({
     author: "",
     title: "",
@@ -15,6 +15,8 @@ const EditBlog = () => {
   });
 
   useEffect(() => {
+    // Get the ID from the URL
+    const id = window.location.pathname.split("/").pop();
     if (id) {
       const blogs = JSON.parse(localStorage.getItem("myData") || "[]");
       const blog = blogs.find((blog) => blog.id === parseInt(id));
@@ -22,7 +24,7 @@ const EditBlog = () => {
         setFormData(blog);
       }
     }
-  }, [id]);
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -32,14 +34,41 @@ const EditBlog = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleUpdate = (e) => {
     e.preventDefault();
-    const blogs = JSON.parse(localStorage.getItem("myData") || "[]");
-    const updatedBlogs = blogs.map((blog) =>
-      blog.id === parseInt(id) ? { ...formData, id: parseInt(id) } : blog
-    );
-    localStorage.setItem("myData", JSON.stringify(updatedBlogs));
-    router.push(`/blog/${id}`);
+
+    // Get the ID from the URL
+    const id = window.location.pathname.split("/").pop();
+
+    try {
+      // Get current blogs from localStorage
+      const blogs = JSON.parse(localStorage.getItem("myData") || "[]");
+
+      // Find the index of the blog to update
+      const blogIndex = blogs.findIndex((blog) => blog.id === parseInt(id));
+
+      if (blogIndex !== -1) {
+        // Update the blog while preserving the id and date
+        const updatedBlog = {
+          ...formData,
+          id: parseInt(id),
+          date: blogs[blogIndex].date, // Preserve the original date
+        };
+
+        // Update the blogs array
+        blogs[blogIndex] = updatedBlog;
+
+        // Save back to localStorage
+        localStorage.setItem("myData", JSON.stringify(blogs));
+
+        // Redirect to home page
+        router.push("/");
+      } else {
+        console.error("Blog not found");
+      }
+    } catch (error) {
+      console.error("Error updating blog:", error);
+    }
   };
 
   return (
@@ -47,7 +76,7 @@ const EditBlog = () => {
       <Navbar />
       <div className="container bg-light" style={{ marginTop: "5rem" }}>
         <h2 className="mb-4">Edit Blog</h2>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleUpdate}>
           <div className="mb-3">
             <input
               type="text"
