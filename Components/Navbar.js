@@ -40,7 +40,7 @@ const Navbar = () => {
           href="/"
         >
           <span className="bi bi-book-half fs-4"></span>
-          GFG Blogs
+          Mega Blogs
         </Link>
 
         {/* Mobile Toggle */}
